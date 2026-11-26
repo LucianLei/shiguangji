@@ -305,8 +305,8 @@ button.upload-area{width:100%;color:var(--text)}
   inset: 0;
   opacity: 0;
   background:
-    radial-gradient(ellipse at 101% var(--glow-origin), #ffe18a91 0%, #ffc47445 13%, #f6a5cc2b 29%, transparent 57%),
-    radial-gradient(ellipse at 95% 48%, #a8b7fb3b, transparent 68%);
+    radial-gradient(ellipse 57% 33% at 101% var(--glow-origin), #ffe18a91 0%, #ffc47445 25%, #f6a5cc2b 55%, transparent 100%),
+    radial-gradient(ellipse 52% 44% at 95% 48%, #a8b7fb3b, transparent 100%);
   transform-origin: right var(--glow-origin);
 }
 .limited-glow-frame {
