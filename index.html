@@ -7,8 +7,8 @@
 <meta name="description" content="拾起同事的闪光时刻。写下认可，为照片贴上可爱的表情，把心意送到。">
 <title>拾光机 · 让每一份闪光被看见</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
-<script src="app.js" defer></script>
+<link rel="stylesheet" href="style.css?v=team-options">
+<script src="app.js?v=team-options" defer></script>
 </head>
 <body>
 <div id="starfield" aria-hidden="true"></div>
@@ -39,7 +39,18 @@
         <div class="field"><label for="sender">我的名字 <span>*</span></label><input id="sender" name="sender" autocomplete="name" placeholder="怎么称呼你" maxlength="40" required></div>
         <div class="field"><label for="colleague">对方的名字 <span>*</span></label><input id="colleague" name="colleague" autocomplete="off" placeholder="这颗星属于谁" maxlength="40" required></div>
       </div>
-      <div class="field"><label for="team">TA 所属的团队 <span>*</span></label><input id="team" name="team" placeholder="例如：产品设计团队" maxlength="80" required></div>
+      <fieldset class="field team-field">
+        <legend>TA 所属的团队 <span>*</span></legend>
+        <div class="team-options">
+          <label class="team-option"><input type="radio" name="team" value="PZ" required><span>PZ</span></label>
+          <label class="team-option"><input type="radio" name="team" value="GB"><span>GB</span></label>
+          <label class="team-option"><input type="radio" name="team" value="OPS"><span>OPS</span></label>
+          <label class="team-option"><input type="radio" name="team" value="TAA"><span>TAA</span></label>
+          <label class="team-option"><input type="radio" name="team" value="BIZ"><span>BIZ</span></label>
+          <label class="team-option"><input type="radio" name="team" value="People"><span>People</span></label>
+          <label class="team-option"><input type="radio" name="team" value="Leadership"><span>Leadership</span></label>
+        </div>
+      </fieldset>
       <div class="field recognition-field"><label for="recognition">我想对 TA 说 <span>*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="word-count"></textarea><span id="word-count" class="word-count">0 / 1200</span></div>
       <div class="inspiration" aria-label="写作灵感"><span>找点灵感</span><button type="button" data-prompt="谢谢你在我需要帮助的时候主动伸出援手，">🤝 及时的帮助</button><button type="button" data-prompt="你对每一个细节的认真，让我印象很深，">✨ 认真与专业</button><button type="button" data-prompt="和你一起合作，总能感受到满满的能量，">🌈 温暖的协作</button></div>
       <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p>加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片"><span></span></label></div>

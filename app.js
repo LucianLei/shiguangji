@@ -137,13 +137,13 @@ function exportImage() {
 }
 function preview() {
   error(''); if (!form.reportValidity()) return;
-  for (const id of ['sender','colleague','team','recognition']) {
+  for (const id of ['sender','colleague','recognition']) {
     if (!$(id).value.trim()) { error('请把姓名、团队和认可内容填写完整。'); $(id).focus(); return; }
   }
   if (state.photoLoading) { error('照片还在处理中，请稍等一下。'); return; }
   if ($('photo-toggle').checked && !state.image) { error('请选择一张照片，或者关闭“添加照片”选项。'); $('upload-area').focus(); return; }
   try {
-    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), team = $('team').value.trim(), recognition = $('recognition').value.trim();
+    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), team = form.elements.namedItem('team').value, recognition = $('recognition').value.trim();
     const imageUrl = exportImage();
     const message = `✨ 拾光机 · 同事认可\n\n来自：${sender}\n送给：${colleague}\n团队：${team}\n\n${recognition}\n\n🌟 让每一份闪光被看见。`;
     state.imageUrl = imageUrl;
