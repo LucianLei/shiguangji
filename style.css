@@ -233,3 +233,107 @@ button.upload-area{width:100%;color:var(--text)}
 @media (max-width: 360px) {
   .recognition-page .fields-grid { grid-template-columns: 1fr; gap: 0; }
 }
+
+/* Limited mode uses a cool-to-warm edge with fixed, legible content surfaces. */
+.mode-tools { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; }
+.glow-toggle {
+  min-height: 44px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--field);
+  color: var(--text);
+  font-size: .875rem;
+}
+.recognition-field label .recognition-label,
+.recognition-field label .recognition-label span {
+  margin: 0;
+  color: inherit;
+}
+.recognition-page[data-mode="limited"] {
+  --limited-spectrum: conic-gradient(
+    from 225deg, #ff994a, #ff625e, #ff799a, #e96ef5,
+    #a876ff, #609bf9, #52d1fe, #a589ff, #ff7c9c, #ff994a
+  );
+  --limited-accent: linear-gradient(112deg, #ffc8a6 0%, #ffd0ed 39%, #d9ceff 69%, #bceaff 100%);
+  --limited-trim: linear-gradient(128deg, #f19c6a, #d784c4 36%, #9674df 69%, #76b8e0);
+  --action-text: #291b3b;
+  --lavender: #693298;
+  --surface: #fcf8fc;
+  --surface-tint: #f2ebf7;
+  --selected-bg: #eadcf7;
+}
+.recognition-page[data-mode="limited"][data-theme="night"] {
+  --lavender: #e0bbff;
+  --surface: #201c32;
+  --surface-tint: #30243f;
+  --selected-bg: #49335e;
+}
+.recognition-page[data-mode="limited"] .workspace,
+.recognition-page[data-mode="limited"] dialog {
+  border-color: transparent;
+  background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--limited-trim) border-box;
+}
+.recognition-page[data-mode="limited"] .mode-choice input:checked + .choice-face,
+.recognition-page[data-mode="limited"] .primary-button,
+.recognition-page[data-mode="limited"] .skip-link {
+  background: var(--limited-accent);
+  color: var(--action-text);
+}
+.recognition-page[data-mode="limited"] .mode-choice input:checked + .choice-face small { color: #4f345e; }
+.recognition-page[data-mode="limited"] .primary-button:hover { filter: brightness(1.05); }
+
+.limited-glow {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 20px;
+  overflow: hidden;
+  --glow-width: clamp(3px, .55vw, 6px);
+}
+.recognition-page[data-mode="limited"] .limited-glow { display: block; }
+.limited-glow-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  filter: blur(11px);
+  opacity: .8;
+  --glow-width: 11px;
+}
+.limited-glow-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--glow-width);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.limited-glow-edge::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 145vmax;
+  height: 145vmax;
+  background: var(--limited-spectrum);
+  transform: translate(-50%, -50%) rotate(0turn);
+  animation: limited-glow-flow 11s linear infinite;
+}
+.glow-paused .limited-glow-edge::before { animation-play-state: paused; }
+@keyframes limited-glow-flow {
+  to { transform: translate(-50%, -50%) rotate(1turn); }
+}
+@media (max-width: 760px) {
+  .mode-tools { margin-inline-start: auto; }
+}
+@media (max-width: 500px) {
+  .recognition-page[data-mode="limited"] .mode-picker { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .limited-glow-edge::before { animation: none; }
+  .glow-toggle { display: none; }
+}

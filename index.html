@@ -7,10 +7,14 @@
 <meta name="description" content="拾起同事的闪光时刻。写下认可，为照片贴上可爱的表情，把心意送到。">
 <title>拾光机 · 让每一份闪光被看见</title>
 <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
-<link rel="stylesheet" href="style.css?v=modes-weather">
-<script src="app.js?v=modes-weather" defer></script>
+<link rel="stylesheet" href="style.css?v=limited-glow">
+<script src="app.js?v=limited-glow" defer></script>
 </head>
-<body class="recognition-page">
+<body class="recognition-page" data-mode="regular">
+<div class="limited-glow" aria-hidden="true">
+  <div class="limited-glow-halo"><div class="limited-glow-edge"></div></div>
+  <div class="limited-glow-edge"></div>
+</div>
 <a href="#form-title" class="skip-link">跳到认可表单</a>
 <div id="spoken-status" class="visually-hidden" role="status" aria-atomic="true"></div>
 <header class="site-header wrap">
@@ -29,16 +33,19 @@
       <span class="choice-face">限定模式 <small><span lang="en">Apple</span> 智能认可</small></span>
     </label>
   </fieldset>
-  <div class="appearance-control">
-    <label for="appearance">外观</label>
-    <select id="appearance">
-      <option value="auto">自动</option>
-      <option value="light">浅色</option>
-      <option value="dark">深色</option>
-    </select>
+  <div class="mode-tools">
+    <button type="button" id="limited-glow-toggle" class="glow-toggle" data-visible-mode="limited" hidden>暂停光效</button>
+    <div class="appearance-control">
+      <label for="appearance">外观</label>
+      <select id="appearance">
+        <option value="auto">自动</option>
+        <option value="light">浅色</option>
+        <option value="dark">深色</option>
+      </select>
+    </div>
   </div>
 </div>
-<main id="recognition-page" class="wrap main-layout" data-mode="regular">
+<main id="recognition-page" class="wrap main-layout">
   <section class="intro" aria-labelledby="hero-title">
     <div class="eyebrow"><span class="little-star" aria-hidden="true">✦</span> 每一份好，都值得被看见</div>
     <h1 id="hero-title">拾起身边的<br><span>闪光时刻。</span></h1>
@@ -52,8 +59,11 @@
     <div class="intro-foot"><span aria-hidden="true">✧</span><p>一句认可，也能点亮一个人的一天。</p></div>
   </section>
   <section class="workspace" aria-labelledby="form-title">
-    <div class="form-topline"><span class="caps" id="regular-form-label" lang="en">A LITTLE APPRECIATION</span><span class="caps" id="limited-form-label" hidden><span lang="en">Apple</span> 智能认可</span><span class="form-mark" aria-hidden="true">✦</span></div>
-    <h2 id="form-title" tabindex="-1">今天，想为谁点亮一颗星？</h2>
+    <div class="form-topline"><span class="caps" data-visible-mode="regular" lang="en">A LITTLE APPRECIATION</span><span class="caps" data-visible-mode="limited" hidden><span lang="en">Apple</span> 智能认可</span><span class="form-mark" aria-hidden="true">✦</span></div>
+    <h2 id="form-title" tabindex="-1">
+      <span data-visible-mode="regular">今天，想为谁点亮一颗星？</span>
+      <span data-visible-mode="limited" hidden>今天，你想认可谁对 <span lang="en">Apple Intelligence</span> 的贡献？</span>
+    </h2>
     <p class="form-subtitle">花一点时间，留住一个值得感谢的瞬间。</p>
     <form id="recognition-form" aria-labelledby="form-title" novalidate>
       <div class="fields-grid">
@@ -73,7 +83,7 @@
           <label class="choice team-option"><input type="radio" name="team" value="Leadership"><span class="choice-face" lang="en">Leadership</span></label>
         </div>
       </fieldset>
-      <div class="field recognition-field"><label for="recognition">我想对 TA 说 <span aria-hidden="true">*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="recognition-hint"></textarea><span id="recognition-hint" class="visually-hidden">必填，最多 1200 字。可以用 iPhone 键盘输入或听写。</span><span id="word-count" class="word-count" aria-hidden="true">0 / 1200</span></div>
+      <div class="field recognition-field"><label for="recognition"><span class="recognition-label" data-visible-mode="regular">我想对 TA 说</span><span class="recognition-label" data-visible-mode="limited" hidden>我想认可他对推动 <span lang="en">AI</span> 的优秀行为！</span> <span aria-hidden="true">*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="recognition-hint"></textarea><span id="recognition-hint" class="visually-hidden">必填，最多 1200 字。可以用 iPhone 键盘输入或听写。</span><span id="word-count" class="word-count" aria-hidden="true">0 / 1200</span></div>
       <div class="inspiration" role="group" aria-label="写作灵感"><span>找点灵感</span><button type="button" data-prompt="谢谢你在我需要帮助的时候主动伸出援手，"><span aria-hidden="true">🤝</span> 及时的帮助</button><button type="button" data-prompt="你对每一个细节的认真，让我印象很深，"><span aria-hidden="true">✨</span> 认真与专业</button><button type="button" data-prompt="和你一起合作，总能感受到满满的能量，"><span aria-hidden="true">🌈</span> 温暖的协作</button></div>
       <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p id="photo-hint">加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片" aria-describedby="photo-hint" aria-controls="photo-section"><span aria-hidden="true"></span></label></div>
       <section id="photo-section" hidden aria-label="照片和贴纸编辑器">

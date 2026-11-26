@@ -98,12 +98,23 @@ if (form) {
     try { localStorage.setItem(APPEARANCE_KEY, appearance.value); } catch {}
   });
   const modePicker = document.querySelector('.mode-picker');
+  const modeContent = document.querySelectorAll('[data-visible-mode]');
+  const glowToggle = $('limited-glow-toggle');
+
   function applyMode() {
     const mode = modePicker.querySelector('input:checked').value;
-    $('recognition-page').dataset.mode = mode;
-    $('regular-form-label').hidden = mode === 'limited';
-    $('limited-form-label').hidden = mode !== 'limited';
+    document.body.dataset.mode = mode;
+    modeContent.forEach(element => {
+      element.hidden = element.dataset.visibleMode !== mode;
+    });
+    $('recognition').placeholder = mode === 'limited'
+      ? 'TA 做了什么来推动 Apple Intelligence？\n写下具体做法，以及它给顾客或同事带来的帮助。'
+      : '哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。';
   }
+  glowToggle.addEventListener('click', () => {
+    const paused = document.body.classList.toggle('glow-paused');
+    glowToggle.textContent = paused ? '播放光效' : '暂停光效';
+  });
   modePicker.addEventListener('change', applyMode);
   window.addEventListener('pageshow', applyMode);
   applyMode();
@@ -113,7 +124,6 @@ if (form) {
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refreshWeather();
   });
-  $('recognition').placeholder = '哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。';
   $('recognition').addEventListener('input', () => $('word-count').textContent = `${$('recognition').value.length} / 1200`);
   document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
     const field = $('recognition'); if (field.value.trim()) { toast('保留你写下的心意，继续写就好'); field.focus(); return; }
@@ -277,7 +287,7 @@ function preview() {
     [$('sender'), $('sender').value.trim(), '请输入你的名字。'],
     [$('colleague'), $('colleague').value.trim(), '请输入对方的名字。'],
     [form.querySelector('input[name="team"]'), team, '请选择对方所属的团队。'],
-    [$('recognition'), $('recognition').value.trim(), '请输入想对同事说的话。']
+    [$('recognition'), $('recognition').value.trim(), document.body.dataset.mode === 'limited' ? '请写下你想认可的具体行为。' : '请输入想对同事说的话。']
   ];
   const missing = checks.find(([, value]) => !value);
   if (missing) {
