@@ -21,9 +21,28 @@
 .team-option input:checked + span{border-color:var(--lavender);background:#382e53;color:var(--text)}
 .team-option input:focus-visible + span{outline:2px solid var(--lavender);outline-offset:2px}
 
+.skip-link{position:fixed;z-index:30;top:10px;left:12px;padding:10px 14px;border-radius:8px;background:var(--lavender);color:var(--bg);transform:translateY(calc(-100% - 12px))}
+.skip-link:focus{transform:none}
+.team-field .team-option span{margin-left:0;color:var(--text)}
+#recognition-form :focus-visible,.guide-link:focus-visible,dialog :focus-visible{outline:2px solid var(--lavender);outline-offset:3px}
+.team-option:focus-within span{outline:2px solid var(--lavender);outline-offset:2px}
+#form-error:empty,#handoff-status:empty{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;padding:0;border:0}
+button.upload-area{width:100%;color:var(--text)}
+.sticker-controls{flex-wrap:wrap}
+.sticker-move{display:flex;flex-wrap:wrap;gap:6px}
+.sticker-controls button,.sticker-move button,.dialog-tools button{min-height:44px}
+
+.recipient-row{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:.8rem 0}
+.recipient-field{flex:1;min-width:min(100%,14rem)}
+.recipient-field label{display:block;margin-bottom:4px}
+.recipient-field input{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--text);font-size:16px}
+.recipient-row .secondary-button{min-height:44px;margin:0}
+
 </style>
 </head>
 <body>
+<a href="#form-title" class="skip-link">跳到认可表单</a>
+<div id="spoken-status" class="visually-hidden" role="status" aria-atomic="true"></div>
 <div id="starfield" aria-hidden="true"></div>
 <div class="nebula nebula-one" aria-hidden="true"></div><div class="nebula nebula-two" aria-hidden="true"></div>
 <header class="site-header wrap">
@@ -45,44 +64,51 @@
   </section>
   <section class="workspace" aria-labelledby="form-title">
     <div class="form-topline"><span class="caps">A LITTLE APPRECIATION</span><span class="form-mark" aria-hidden="true">✦</span></div>
-    <h2 id="form-title">今天，想为谁点亮一颗星？</h2>
+    <h2 id="form-title" tabindex="-1">今天，想为谁点亮一颗星？</h2>
     <p class="form-subtitle">花一点时间，留住一个值得感谢的瞬间。</p>
-    <form id="recognition-form">
+    <form id="recognition-form" aria-labelledby="form-title" novalidate>
       <div class="fields-grid">
-        <div class="field"><label for="sender">我的名字 <span>*</span></label><input id="sender" name="sender" autocomplete="name" placeholder="怎么称呼你" maxlength="40" required></div>
-        <div class="field"><label for="colleague">对方的名字 <span>*</span></label><input id="colleague" name="colleague" autocomplete="off" placeholder="这颗星属于谁" maxlength="40" required></div>
+        <div class="field"><label for="sender">我的名字 <span aria-hidden="true">*</span></label><input id="sender" name="sender" autocomplete="name" placeholder="怎么称呼你" maxlength="40" required></div>
+        <div class="field"><label for="colleague">对方的名字 <span aria-hidden="true">*</span></label><input id="colleague" name="colleague" autocomplete="off" placeholder="这颗星属于谁" maxlength="40" required></div>
       </div>
-      <fieldset class="field team-field">
-        <legend>TA 所属的团队 <span>*</span></legend>
+      <fieldset class="field team-field" aria-describedby="team-hint">
+        <legend>TA 所属的团队 <span aria-hidden="true">*</span></legend>
+        <p id="team-hint" class="visually-hidden">必选，七个团队中选择一个。</p>
         <div class="team-options">
-          <label class="team-option"><input type="radio" name="team" value="PZ" required><span>PZ</span></label>
-          <label class="team-option"><input type="radio" name="team" value="GB"><span>GB</span></label>
-          <label class="team-option"><input type="radio" name="team" value="OPS"><span>OPS</span></label>
-          <label class="team-option"><input type="radio" name="team" value="TAA"><span>TAA</span></label>
-          <label class="team-option"><input type="radio" name="team" value="BIZ"><span>BIZ</span></label>
-          <label class="team-option"><input type="radio" name="team" value="People"><span>People</span></label>
-          <label class="team-option"><input type="radio" name="team" value="Leadership"><span>Leadership</span></label>
+          <label class="team-option"><input type="radio" name="team" value="PZ" required><span lang="en">PZ</span></label>
+          <label class="team-option"><input type="radio" name="team" value="GB"><span lang="en">GB</span></label>
+          <label class="team-option"><input type="radio" name="team" value="OPS"><span lang="en">OPS</span></label>
+          <label class="team-option"><input type="radio" name="team" value="TAA"><span lang="en">TAA</span></label>
+          <label class="team-option"><input type="radio" name="team" value="BIZ"><span lang="en">BIZ</span></label>
+          <label class="team-option"><input type="radio" name="team" value="People"><span lang="en">People</span></label>
+          <label class="team-option"><input type="radio" name="team" value="Leadership"><span lang="en">Leadership</span></label>
         </div>
       </fieldset>
-      <div class="field recognition-field"><label for="recognition">我想对 TA 说 <span>*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="word-count"></textarea><span id="word-count" class="word-count">0 / 1200</span></div>
-      <div class="inspiration" aria-label="写作灵感"><span>找点灵感</span><button type="button" data-prompt="谢谢你在我需要帮助的时候主动伸出援手，">🤝 及时的帮助</button><button type="button" data-prompt="你对每一个细节的认真，让我印象很深，">✨ 认真与专业</button><button type="button" data-prompt="和你一起合作，总能感受到满满的能量，">🌈 温暖的协作</button></div>
-      <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p>加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片"><span></span></label></div>
+      <div class="field recognition-field"><label for="recognition">我想对 TA 说 <span aria-hidden="true">*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="recognition-hint"></textarea><span id="recognition-hint" class="visually-hidden">必填，最多 1200 字。可以用 iPhone 键盘输入或听写。</span><span id="word-count" class="word-count" aria-hidden="true">0 / 1200</span></div>
+      <div class="inspiration" role="group" aria-label="写作灵感"><span>找点灵感</span><button type="button" data-prompt="谢谢你在我需要帮助的时候主动伸出援手，"><span aria-hidden="true">🤝</span> 及时的帮助</button><button type="button" data-prompt="你对每一个细节的认真，让我印象很深，"><span aria-hidden="true">✨</span> 认真与专业</button><button type="button" data-prompt="和你一起合作，总能感受到满满的能量，"><span aria-hidden="true">🌈</span> 温暖的协作</button></div>
+      <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p>加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片" aria-controls="photo-section"><span></span></label></div>
       <section id="photo-section" hidden aria-label="照片和贴纸编辑器">
-        <label class="upload-area" id="upload-area" tabindex="0" for="photo-input"><span class="upload-icon" aria-hidden="true">＋</span><strong>从手机相册选择照片</strong><span>照片只在本机处理，不上传服务器</span></label>
-        <input type="file" id="photo-input" accept="image/*" class="visually-hidden" tabindex="-1">
+        <button type="button" class="upload-area" id="upload-area" aria-labelledby="upload-label" aria-describedby="upload-hint"><span class="upload-icon" aria-hidden="true">＋</span><strong id="upload-label">从手机相册选择照片</strong><span id="upload-hint">照片只在本机处理，不上传服务器</span></button>
+        <input type="file" id="photo-input" accept="image/*" hidden>
         <div id="photo-editor" hidden>
-          <div class="photo-toolbar"><span>给闪光时刻加一点可爱</span><div><button id="replace-photo" type="button">更换</button><button id="remove-photo" type="button">移除</button></div></div>
-          <div id="photo-stage" aria-label="照片预览，选择贴纸后可拖动位置"><img id="photo-image" alt="选中的认可照片" draggable="false"><div id="sticker-layer"></div></div>
-          <div id="sticker-palette" class="sticker-palette" aria-label="选择一个表情贴纸"></div>
-          <p class="editor-hint">点一下表情添加，按住照片上的贴纸拖动位置。</p>
-          <div id="sticker-controls" class="sticker-controls" hidden>
-            <label for="sticker-size">大小</label><input id="sticker-size" type="range" min="8" max="28" value="16" aria-label="贴纸大小">
+          <div class="photo-toolbar"><span>给闪光时刻加一点可爱</span><div><button id="replace-photo" type="button" aria-label="更换照片">更换</button><button id="remove-photo" type="button" aria-label="移除照片">移除</button></div></div>
+          <div id="photo-stage" role="group" aria-label="照片与已添加的贴纸"><img id="photo-image" alt="选中的认可照片" draggable="false"><div id="sticker-layer"></div></div>
+          <div id="sticker-palette" class="sticker-palette" role="group" aria-label="添加表情贴纸"></div>
+          <p class="editor-hint">点一下表情添加。选中贴纸后，可以拖动或用下方的方向按钮移动。</p>
+          <div id="sticker-controls" class="sticker-controls" role="group" aria-label="编辑选中的贴纸" hidden>
+            <label for="sticker-size">大小</label><input id="sticker-size" type="range" min="8" max="28" value="16" aria-label="贴纸大小" aria-valuetext="照片宽度的 16%">
             <button id="rotate-sticker" type="button" aria-label="旋转选中贴纸">↻ 旋转</button><button id="delete-sticker" type="button" aria-label="删除选中贴纸">删除</button>
+            <div class="sticker-move" role="group" aria-label="移动选中的贴纸">
+              <button type="button" data-sticker-move="up" aria-label="向上移动贴纸">向上</button>
+              <button type="button" data-sticker-move="down" aria-label="向下移动贴纸">向下</button>
+              <button type="button" data-sticker-move="left" aria-label="向左移动贴纸">向左</button>
+              <button type="button" data-sticker-move="right" aria-label="向右移动贴纸">向右</button>
+            </div>
           </div>
           <p class="editor-hint keyboard-hint">键盘：选中贴纸后用方向键移动，Delete 删除。</p>
         </div>
       </section>
-      <p id="form-error" class="error" role="alert" hidden></p>
+      <p id="form-error" class="error" role="alert" aria-atomic="true"></p>
       <button class="primary-button" type="submit" id="preview-button"><span aria-hidden="true">✦</span> 预览这份认可</button>
       <p class="privacy-note">在预览中确认后，将正文和照片分享到「信息」。</p>
     </form>
@@ -90,14 +116,19 @@
 </main>
 <footer class="site-footer wrap"><span>拾光机 <span class="footer-spark">✦</span> 记录美好，传递认可</span><span>每一个闪光的你，都值得被记住。</span></footer>
 <dialog id="preview-dialog" aria-labelledby="preview-title">
-  <div class="dialog-heading"><div><span class="caps">READY TO SHINE</span><h2 id="preview-title">一份心意，准备就绪。</h2></div><button class="close-button" id="close-preview" type="button" aria-label="关闭预览">×</button></div>
+  <div class="dialog-heading"><div><span class="caps">READY TO SHINE</span><h2 id="preview-title" tabindex="-1" autofocus>一份心意，准备就绪。</h2></div><button class="close-button" id="close-preview" type="button" aria-label="关闭预览">×</button></div>
   <article class="recognition-card"><div class="card-top"><span>拾光机 · 同事认可</span><span aria-hidden="true">✦</span></div><p class="card-to">送给 <strong id="preview-colleague"></strong></p><p id="preview-team" class="card-team"></p><p id="preview-message" class="card-message"></p><img id="preview-image" alt="已合成表情贴纸的照片" hidden><p class="card-from">来自 <strong id="preview-sender"></strong> 的一颗星 <span aria-hidden="true">✧</span></p></article>
-  <p class="handoff-note">在系统分享菜单中选择「信息」，选择收件人，核对正文和照片后发送。</p>
-  <p id="handoff-status" class="status" role="status" hidden></p>
+  <p class="handoff-note">先复制收件地址，然后分享到「信息」。在「信息」中粘贴收件地址，核对正文和照片后发送。</p>
+  <div class="recipient-row">
+    <div class="recipient-field"><label for="recipient-address">iMessage 收件地址</label><input id="recipient-address" type="text" value="qbkudos@icloud.com" readonly></div>
+    <button type="button" class="secondary-button" id="copy-recipient">复制收件地址</button>
+  </div>
+  <p id="handoff-status" class="status" role="status" aria-atomic="true"></p>
   <button id="handoff-button" class="primary-button" type="button">分享到「信息」</button>
   <details id="handoff-fallback">
     <summary class="small-note">分享遇到问题？</summary>
     <p id="fallback-note" class="small-note"></p>
+    <a class="secondary-button" href="sms:qbkudos@icloud.com">打开该收件人的信息</a>
     <div class="dialog-tools">
       <button id="copy-message" type="button">复制正文</button>
       <button id="share-photo" type="button" hidden>仅分享照片</button>
@@ -108,11 +139,11 @@
   <p class="small-note">在「信息」里确认发送结果。刷新页面会清除本次内容。</p>
 </dialog>
 <dialog id="share-help" aria-labelledby="share-help-title">
-  <div class="dialog-heading"><div><h2 id="share-help-title">用「信息」发送认可</h2></div><form method="dialog"><button class="close-button" aria-label="关闭发送帮助">×</button></form></div>
-  <p class="handoff-note">请用 iPhone 的 Safari 打开此网页。填写认可内容并按需添加照片，在预览中点「分享到『信息』」，从系统分享菜单选择「信息」，再选择一位收件人。</p>
+  <div class="dialog-heading"><div><h2 id="share-help-title" tabindex="-1" autofocus>用「信息」发送认可</h2></div><form method="dialog"><button class="close-button" aria-label="关闭发送帮助">×</button></form></div>
+  <p class="handoff-note">请用 iPhone 的 Safari 打开此网页。填写认可内容并按需添加照片，在预览中点「分享到『信息』」，从系统分享菜单选择「信息」，在收件人栏填写 qbkudos@icloud.com。</p>
   <p class="small-note">若草稿只显示文字或照片，回到预览，展开「分享遇到问题？」，按提示将正文和照片放进同一条草稿。</p>
 </dialog>
-<div id="toast" class="toast" role="status" hidden></div>
+<div id="toast" class="toast" aria-hidden="true" hidden></div>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -120,9 +151,28 @@ const EMOJIS = [['🌟','闪亮的星'],['💛','温暖的心'],['🙌','为你�
 const state = { image: null, stickers: [], selected: null, nextId: 0, payload: null, imageUrl: null, shareFile: null, sharing: false, photoLoading: false, loadVersion: 0 };
 const form = $('recognition-form');
 let toastTimer;
-function toast(text) { $('toast').textContent = text; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 3600); }
+let announcementTimer;
+function announce(text) {
+  const status = $('spoken-status');
+  status.textContent = '';
+  clearTimeout(announcementTimer);
+  announcementTimer = setTimeout(() => { status.textContent = text; }, 40);
+}
+function toast(text) { announce(text); $('toast').textContent = text; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 3600); }
 function setPhotoLoading(loading) { state.photoLoading = loading; $('preview-button').disabled = loading; if (loading) $('preview-button').textContent = '正在处理照片…'; else $('preview-button').innerHTML = '<span aria-hidden="true">✦</span> 预览这份认可'; }
-function error(text) { $('form-error').textContent = text; $('form-error').hidden = !text; }
+function error(text, field) {
+  const message = $('form-error');
+  form.querySelectorAll('[aria-invalid]').forEach(input => {
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-errormessage');
+  });
+  message.textContent = text;
+  if (field) {
+    field.setAttribute('aria-invalid', 'true');
+    field.setAttribute('aria-errormessage', message.id);
+    field.focus();
+  }
+}
 function createStars() {
   const field = $('starfield'); if (!field) return;
   // Deterministic positions keep every render calm and avoid clustering.
@@ -148,9 +198,11 @@ if (form) {
     field.value = button.dataset.prompt; field.dispatchEvent(new Event('input')); field.focus(); field.setSelectionRange(field.value.length, field.value.length);
   }));
   $('photo-toggle').addEventListener('change', () => { $('photo-section').hidden = !$('photo-toggle').checked; error(''); });
-  $('upload-area').addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); $('photo-input').click(); } });
+  $('upload-area').addEventListener('click', () => $('photo-input').click());
+  form.addEventListener('input', () => { if (form.querySelector('[aria-invalid]')) error(''); });
+  form.addEventListener('reset', () => error(''));
   $('replace-photo').addEventListener('click', () => $('photo-input').click());
-  $('remove-photo').addEventListener('click', () => { state.loadVersion++; setPhotoLoading(false); state.image = null; state.stickers = []; state.selected = null; $('photo-input').value = ''; $('photo-editor').hidden = true; $('upload-area').hidden = false; $('photo-image').removeAttribute('src'); renderStickers(); error(''); });
+  $('remove-photo').addEventListener('click', () => { state.loadVersion++; setPhotoLoading(false); state.image = null; state.stickers = []; state.selected = null; $('photo-input').value = ''; $('photo-editor').hidden = true; $('upload-area').hidden = false; $('photo-image').removeAttribute('src'); renderStickers(); error(''); $('upload-area').focus(); announce('已移除照片。'); });
   $('photo-input').addEventListener('change', async event => {
     const file = event.target.files[0]; if (!file) return;
     const version = ++state.loadVersion; setPhotoLoading(false);
@@ -166,7 +218,7 @@ if (form) {
       const normalized = new Image(); normalized.src = canvas.toDataURL('image/jpeg', .9); await normalized.decode();
       if (version !== state.loadVersion) return;
       state.image = normalized; state.stickers = []; state.selected = null;
-      $('photo-image').src = normalized.src; $('photo-editor').hidden = false; $('upload-area').hidden = true; renderStickers(); toast('照片准备好了，选一个小表情吧');
+      $('photo-image').src = normalized.src; $('photo-editor').hidden = false; $('upload-area').hidden = true; renderStickers(); $('replace-photo').focus(); toast('照片已添加，可以选择贴纸。');
     } catch { if (version === state.loadVersion) error('暂时无法读取这张照片。请尝试 JPEG、PNG，或在相册中将照片导出后重试。'); }
     finally { URL.revokeObjectURL(url); if (version === state.loadVersion) { setPhotoLoading(false); } event.target.value = ''; }
   });
@@ -176,20 +228,40 @@ if (form) {
       if (state.stickers.length >= 20) { toast('最多添加 20 个贴纸，已经很可爱啦'); return; }
       const offset = (state.stickers.length % 5 - 2) * .045;
       const sticker = { id: ++state.nextId, emoji, label, x: .5 + offset, y: .5 + offset, size: .16, rotation: 0 };
-      state.stickers.push(sticker); state.selected = sticker.id; renderStickers();
+      state.stickers.push(sticker); state.selected = sticker.id; renderStickers(); announceSticker(sticker, '已添加');
     }); $('sticker-palette').append(button);
   });
   $('photo-stage').addEventListener('pointerdown', event => { if (!event.target.closest('.photo-sticker')) { state.selected = null; syncSelection(); } });
-  $('sticker-size').addEventListener('input', event => { const s = selectedSticker(); if (s) { s.size = Number(event.target.value) / 100; clampSticker(s); positionSticker(s); } });
-  $('rotate-sticker').addEventListener('click', () => { const s = selectedSticker(); if (s) { s.rotation = (s.rotation + 15) % 360; clampSticker(s); positionSticker(s); } });
+  $('sticker-size').addEventListener('input', event => { const s = selectedSticker(); if (s) { s.size = Number(event.target.value) / 100; clampSticker(s); positionSticker(s); event.target.setAttribute('aria-valuetext', '照片宽度的 ' + event.target.value + '%'); } });
+  $('rotate-sticker').addEventListener('click', () => { const s = selectedSticker(); if (s) { s.rotation = (s.rotation + 15) % 360; clampSticker(s); positionSticker(s); announce(s.label + '贴纸，已旋转至' + s.rotation + '度。'); } });
   $('delete-sticker').addEventListener('click', deleteSelected);
+  document.querySelectorAll('[data-sticker-move]').forEach(button => {
+    button.addEventListener('click', () => {
+      const sticker = selectedSticker();
+      if (sticker) moveSticker(sticker, button.dataset.stickerMove, .05);
+    });
+  });
   new ResizeObserver(() => state.stickers.forEach(positionSticker)).observe($('photo-stage'));
   form.addEventListener('submit', event => { event.preventDefault(); preview(); });
   $('close-preview').addEventListener('click', () => $('preview-dialog').close());
   $('edit-recognition').addEventListener('click', () => $('preview-dialog').close());
+  $('preview-dialog').addEventListener('close', () => $('preview-button').focus());
   $('open-share-help').addEventListener('click', event => {
     event.preventDefault();
     $('share-help').showModal();
+    $('share-help-title').focus();
+  });
+  $('share-help').addEventListener('close', () => $('open-share-help').focus());
+  $('copy-recipient').addEventListener('click', async () => {
+    const field = $('recipient-address');
+    try {
+      await navigator.clipboard.writeText(field.value);
+      shareStatus('收件地址已复制。在「信息」的收件人栏里粘贴即可。');
+    } catch {
+      field.focus();
+      field.select();
+      shareStatus('收件地址已选中，请用系统菜单复制。');
+    }
   });
   $('handoff-button').addEventListener('click', () => handoff(false));
   $('share-photo').addEventListener('click', () => handoff(true));
@@ -212,14 +284,42 @@ function positionSticker(s) {
 }
 function syncSelection() {
   state.stickers.forEach(s => { const button = document.getElementById('sticker-' + s.id); if (button) { button.classList.toggle('selected', s.id === state.selected); button.setAttribute('aria-pressed', String(s.id === state.selected)); } });
-  const selected = selectedSticker(); $('sticker-controls').hidden = !selected; if (selected) $('sticker-size').value = Math.round(selected.size * 100);
+  const selected = selectedSticker();
+  $('sticker-controls').hidden = !selected;
+  if (selected) {
+    const size = Math.round(selected.size * 100);
+    $('sticker-size').value = size;
+    $('sticker-size').setAttribute('aria-valuetext', '照片宽度的 ' + size + '%');
+  }
 }
-function deleteSelected() { state.stickers = state.stickers.filter(s => s.id !== state.selected); state.selected = null; renderStickers(); }
+function announceSticker(sticker, action) {
+  const x = Math.round(sticker.x * 100);
+  const y = Math.round(sticker.y * 100);
+  announce(action + sticker.label + '贴纸。从左 ' + x + '%，从上 ' + y + '%。');
+}
+function moveSticker(sticker, direction, step) {
+  if (direction === 'left') sticker.x -= step;
+  if (direction === 'right') sticker.x += step;
+  if (direction === 'up') sticker.y -= step;
+  if (direction === 'down') sticker.y += step;
+  clampSticker(sticker);
+  positionSticker(sticker);
+  announceSticker(sticker, '已移动');
+}
+function deleteSelected() {
+  const sticker = selectedSticker();
+  if (!sticker) return;
+  state.stickers = state.stickers.filter(s => s.id !== sticker.id);
+  state.selected = null;
+  renderStickers();
+  $('sticker-palette').querySelector('button').focus();
+  announce('已删除' + sticker.label + '贴纸。');
+}
 function renderStickers() {
   $('sticker-layer').replaceChildren();
   state.stickers.forEach(s => {
     const button = document.createElement('button'); button.id = 'sticker-' + s.id; button.className = 'photo-sticker'; button.type = 'button'; button.textContent = s.emoji;
-    button.setAttribute('aria-label', s.label + '贴纸，方向键移动，Delete 删除');
+    button.setAttribute('aria-label', s.label + '贴纸');
     let drag = null;
     button.addEventListener('pointerdown', event => {
       if (event.button !== 0) return; event.preventDefault(); state.selected = s.id; syncSelection(); button.focus({preventScroll:true});
@@ -233,12 +333,12 @@ function renderStickers() {
       clampSticker(s); positionSticker(s);
     });
     ['pointerup','pointercancel','lostpointercapture'].forEach(type => button.addEventListener(type, () => drag = null));
-    button.addEventListener('click', () => { state.selected = s.id; syncSelection(); });
+    button.addEventListener('click', () => { state.selected = s.id; syncSelection(); announceSticker(s, '已选中'); });
     button.addEventListener('keydown', event => {
       state.selected = s.id; syncSelection(); const step = event.shiftKey ? .05 : .01;
-      if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); deleteSelected(); $('sticker-palette').querySelector('button').focus(); return; }
+      if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); deleteSelected(); return; }
       if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
-      event.preventDefault(); if (event.key === 'ArrowLeft') s.x -= step; if (event.key === 'ArrowRight') s.x += step; if (event.key === 'ArrowUp') s.y -= step; if (event.key === 'ArrowDown') s.y += step; clampSticker(s); positionSticker(s);
+      event.preventDefault(); moveSticker(s, event.key.slice(5).toLowerCase(), step);
     });
     $('sticker-layer').append(button); positionSticker(s);
   }); syncSelection();
@@ -256,14 +356,24 @@ function exportImage() {
   return canvas.toDataURL('image/jpeg', .82);
 }
 function preview() {
-  error(''); if (!form.reportValidity()) return;
-  for (const id of ['sender','colleague','recognition']) {
-    if (!$(id).value.trim()) { error('请把姓名、团队和认可内容填写完整。'); $(id).focus(); return; }
+  error('');
+  const team = form.elements.namedItem('team').value;
+  const checks = [
+    [$('sender'), $('sender').value.trim(), '请输入你的名字。'],
+    [$('colleague'), $('colleague').value.trim(), '请输入对方的名字。'],
+    [form.querySelector('input[name="team"]'), team, '请选择对方所属的团队。'],
+    [$('recognition'), $('recognition').value.trim(), '请输入想对同事说的话。']
+  ];
+  const missing = checks.find(([, value]) => !value);
+  if (missing) {
+    const [field, , message] = missing;
+    error(message, field);
+    return;
   }
   if (state.photoLoading) { error('照片还在处理中，请稍等一下。'); return; }
-  if ($('photo-toggle').checked && !state.image) { error('请选择一张照片，或者关闭“添加照片”选项。'); $('upload-area').focus(); return; }
+  if ($('photo-toggle').checked && !state.image) { error('请选择一张照片，或者关闭“添加照片”选项。', $('upload-area')); return; }
   try {
-    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), team = form.elements.namedItem('team').value, recognition = $('recognition').value.trim();
+    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), recognition = $('recognition').value.trim();
     const imageUrl = exportImage();
     const message = `✨ 拾光机 · 同事认可\n\n来自：${sender}\n送给：${colleague}\n团队：${team}\n\n${recognition}\n\n🌟 让每一份闪光被看见。`;
     const imageBase64 = imageUrl ? imageUrl.split(',')[1] : '';
@@ -275,20 +385,20 @@ function preview() {
     $('preview-colleague').textContent = colleague; $('preview-team').textContent = team; $('preview-message').textContent = recognition; $('preview-sender').textContent = sender;
     $('preview-image').hidden = !imageUrl; if (imageUrl) $('preview-image').src = imageUrl; else $('preview-image').removeAttribute('src');
     $('download-image').hidden = !imageUrl;
-    $('handoff-status').hidden = true;
+    $('handoff-status').textContent = '';
     $('handoff-fallback').open = false;
     $('manual-copy').hidden = true;
     $('share-photo').hidden = !state.shareFile;
     $('fallback-note').textContent = state.shareFile
-      ? '先复制正文，再点「仅分享照片」。在「信息」中选择收件人，将正文粘贴到照片所在的草稿，再一起发送。'
+      ? '先复制正文，再点「仅分享照片」。在「信息」中填写收件人 qbkudos@icloud.com，将正文粘贴到照片所在的草稿，再一起发送。'
       : '复制正文，然后到「信息」里粘贴并发送。';
     $('preview-dialog').showModal();
+    $('preview-title').focus();
   } catch { error('这次图片合成没有完成，请减少贴纸或更换照片再试。'); }
 }
 function shareStatus(text) {
   const status = $('handoff-status');
   status.textContent = text;
-  status.hidden = false;
 }
 
 async function handoff(photoOnly) {

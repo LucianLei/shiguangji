@@ -6,9 +6,28 @@ const EMOJIS = [['🌟','闪亮的星'],['💛','温暖的心'],['🙌','为你�
 const state = { image: null, stickers: [], selected: null, nextId: 0, payload: null, imageUrl: null, photoLoading: false, loadVersion: 0 };
 const form = $('recognition-form');
 let toastTimer;
-function toast(text) { $('toast').textContent = text; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 3600); }
+let announcementTimer;
+function announce(text) {
+  const status = $('spoken-status');
+  status.textContent = '';
+  clearTimeout(announcementTimer);
+  announcementTimer = setTimeout(() => { status.textContent = text; }, 40);
+}
+function toast(text) { announce(text); $('toast').textContent = text; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 3600); }
 function setPhotoLoading(loading) { state.photoLoading = loading; $('preview-button').disabled = loading; if (loading) $('preview-button').textContent = '正在处理照片…'; else $('preview-button').innerHTML = '<span aria-hidden="true">✦</span> 预览这份认可'; }
-function error(text) { $('form-error').textContent = text; $('form-error').hidden = !text; }
+function error(text, field) {
+  const message = $('form-error');
+  form.querySelectorAll('[aria-invalid]').forEach(input => {
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-errormessage');
+  });
+  message.textContent = text;
+  if (field) {
+    field.setAttribute('aria-invalid', 'true');
+    field.setAttribute('aria-errormessage', message.id);
+    field.focus();
+  }
+}
 function createStars() {
   const field = $('starfield'); if (!field) return;
   // Deterministic positions keep every render calm and avoid clustering.
@@ -34,9 +53,11 @@ if (form) {
     field.value = button.dataset.prompt; field.dispatchEvent(new Event('input')); field.focus(); field.setSelectionRange(field.value.length, field.value.length);
   }));
   $('photo-toggle').addEventListener('change', () => { $('photo-section').hidden = !$('photo-toggle').checked; error(''); });
-  $('upload-area').addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); $('photo-input').click(); } });
+  $('upload-area').addEventListener('click', () => $('photo-input').click());
+  form.addEventListener('input', () => { if (form.querySelector('[aria-invalid]')) error(''); });
+  form.addEventListener('reset', () => error(''));
   $('replace-photo').addEventListener('click', () => $('photo-input').click());
-  $('remove-photo').addEventListener('click', () => { state.loadVersion++; setPhotoLoading(false); state.image = null; state.stickers = []; state.selected = null; $('photo-input').value = ''; $('photo-editor').hidden = true; $('upload-area').hidden = false; $('photo-image').removeAttribute('src'); renderStickers(); error(''); });
+  $('remove-photo').addEventListener('click', () => { state.loadVersion++; setPhotoLoading(false); state.image = null; state.stickers = []; state.selected = null; $('photo-input').value = ''; $('photo-editor').hidden = true; $('upload-area').hidden = false; $('photo-image').removeAttribute('src'); renderStickers(); error(''); $('upload-area').focus(); announce('已移除照片。'); });
   $('photo-input').addEventListener('change', async event => {
     const file = event.target.files[0]; if (!file) return;
     const version = ++state.loadVersion; setPhotoLoading(false);
@@ -52,7 +73,7 @@ if (form) {
       const normalized = new Image(); normalized.src = canvas.toDataURL('image/jpeg', .9); await normalized.decode();
       if (version !== state.loadVersion) return;
       state.image = normalized; state.stickers = []; state.selected = null;
-      $('photo-image').src = normalized.src; $('photo-editor').hidden = false; $('upload-area').hidden = true; renderStickers(); toast('照片准备好了，选一个小表情吧');
+      $('photo-image').src = normalized.src; $('photo-editor').hidden = false; $('upload-area').hidden = true; renderStickers(); $('replace-photo').focus(); toast('照片已添加，可以选择贴纸。');
     } catch { if (version === state.loadVersion) error('暂时无法读取这张照片。请尝试 JPEG、PNG，或在相册中将照片导出后重试。'); }
     finally { URL.revokeObjectURL(url); if (version === state.loadVersion) { setPhotoLoading(false); } event.target.value = ''; }
   });
@@ -62,17 +83,24 @@ if (form) {
       if (state.stickers.length >= 20) { toast('最多添加 20 个贴纸，已经很可爱啦'); return; }
       const offset = (state.stickers.length % 5 - 2) * .045;
       const sticker = { id: ++state.nextId, emoji, label, x: .5 + offset, y: .5 + offset, size: .16, rotation: 0 };
-      state.stickers.push(sticker); state.selected = sticker.id; renderStickers();
+      state.stickers.push(sticker); state.selected = sticker.id; renderStickers(); announceSticker(sticker, '已添加');
     }); $('sticker-palette').append(button);
   });
   $('photo-stage').addEventListener('pointerdown', event => { if (!event.target.closest('.photo-sticker')) { state.selected = null; syncSelection(); } });
-  $('sticker-size').addEventListener('input', event => { const s = selectedSticker(); if (s) { s.size = Number(event.target.value) / 100; clampSticker(s); positionSticker(s); } });
-  $('rotate-sticker').addEventListener('click', () => { const s = selectedSticker(); if (s) { s.rotation = (s.rotation + 15) % 360; clampSticker(s); positionSticker(s); } });
+  $('sticker-size').addEventListener('input', event => { const s = selectedSticker(); if (s) { s.size = Number(event.target.value) / 100; clampSticker(s); positionSticker(s); event.target.setAttribute('aria-valuetext', '照片宽度的 ' + event.target.value + '%'); } });
+  $('rotate-sticker').addEventListener('click', () => { const s = selectedSticker(); if (s) { s.rotation = (s.rotation + 15) % 360; clampSticker(s); positionSticker(s); announce(s.label + '贴纸，已旋转至' + s.rotation + '度。'); } });
   $('delete-sticker').addEventListener('click', deleteSelected);
+  document.querySelectorAll('[data-sticker-move]').forEach(button => {
+    button.addEventListener('click', () => {
+      const sticker = selectedSticker();
+      if (sticker) moveSticker(sticker, button.dataset.stickerMove, .05);
+    });
+  });
   new ResizeObserver(() => state.stickers.forEach(positionSticker)).observe($('photo-stage'));
   form.addEventListener('submit', event => { event.preventDefault(); preview(); });
   $('close-preview').addEventListener('click', () => $('preview-dialog').close());
   $('edit-recognition').addEventListener('click', () => $('preview-dialog').close());
+  $('preview-dialog').addEventListener('close', () => $('preview-button').focus());
   $('handoff-button').addEventListener('click', handoff);
   $('download-json').addEventListener('click', () => { if (state.payload) download(new Blob([JSON.stringify(state.payload)], { type: 'application/json' }), 'shiguangji-recognition.json'); });
   $('download-image').addEventListener('click', () => { if (state.imageUrl) { const a = document.createElement('a'); a.href = state.imageUrl; a.download = 'shiguangji-moment.jpg'; a.click(); } });
@@ -92,14 +120,42 @@ function positionSticker(s) {
 }
 function syncSelection() {
   state.stickers.forEach(s => { const button = document.getElementById('sticker-' + s.id); if (button) { button.classList.toggle('selected', s.id === state.selected); button.setAttribute('aria-pressed', String(s.id === state.selected)); } });
-  const selected = selectedSticker(); $('sticker-controls').hidden = !selected; if (selected) $('sticker-size').value = Math.round(selected.size * 100);
+  const selected = selectedSticker();
+  $('sticker-controls').hidden = !selected;
+  if (selected) {
+    const size = Math.round(selected.size * 100);
+    $('sticker-size').value = size;
+    $('sticker-size').setAttribute('aria-valuetext', '照片宽度的 ' + size + '%');
+  }
 }
-function deleteSelected() { state.stickers = state.stickers.filter(s => s.id !== state.selected); state.selected = null; renderStickers(); }
+function announceSticker(sticker, action) {
+  const x = Math.round(sticker.x * 100);
+  const y = Math.round(sticker.y * 100);
+  announce(action + sticker.label + '贴纸。从左 ' + x + '%，从上 ' + y + '%。');
+}
+function moveSticker(sticker, direction, step) {
+  if (direction === 'left') sticker.x -= step;
+  if (direction === 'right') sticker.x += step;
+  if (direction === 'up') sticker.y -= step;
+  if (direction === 'down') sticker.y += step;
+  clampSticker(sticker);
+  positionSticker(sticker);
+  announceSticker(sticker, '已移动');
+}
+function deleteSelected() {
+  const sticker = selectedSticker();
+  if (!sticker) return;
+  state.stickers = state.stickers.filter(s => s.id !== sticker.id);
+  state.selected = null;
+  renderStickers();
+  $('sticker-palette').querySelector('button').focus();
+  announce('已删除' + sticker.label + '贴纸。');
+}
 function renderStickers() {
   $('sticker-layer').replaceChildren();
   state.stickers.forEach(s => {
     const button = document.createElement('button'); button.id = 'sticker-' + s.id; button.className = 'photo-sticker'; button.type = 'button'; button.textContent = s.emoji;
-    button.setAttribute('aria-label', s.label + '贴纸，方向键移动，Delete 删除');
+    button.setAttribute('aria-label', s.label + '贴纸');
     let drag = null;
     button.addEventListener('pointerdown', event => {
       if (event.button !== 0) return; event.preventDefault(); state.selected = s.id; syncSelection(); button.focus({preventScroll:true});
@@ -113,12 +169,12 @@ function renderStickers() {
       clampSticker(s); positionSticker(s);
     });
     ['pointerup','pointercancel','lostpointercapture'].forEach(type => button.addEventListener(type, () => drag = null));
-    button.addEventListener('click', () => { state.selected = s.id; syncSelection(); });
+    button.addEventListener('click', () => { state.selected = s.id; syncSelection(); announceSticker(s, '已选中'); });
     button.addEventListener('keydown', event => {
       state.selected = s.id; syncSelection(); const step = event.shiftKey ? .05 : .01;
-      if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); deleteSelected(); $('sticker-palette').querySelector('button').focus(); return; }
+      if (event.key === 'Delete' || event.key === 'Backspace') { event.preventDefault(); deleteSelected(); return; }
       if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) return;
-      event.preventDefault(); if (event.key === 'ArrowLeft') s.x -= step; if (event.key === 'ArrowRight') s.x += step; if (event.key === 'ArrowUp') s.y -= step; if (event.key === 'ArrowDown') s.y += step; clampSticker(s); positionSticker(s);
+      event.preventDefault(); moveSticker(s, event.key.slice(5).toLowerCase(), step);
     });
     $('sticker-layer').append(button); positionSticker(s);
   }); syncSelection();
@@ -136,22 +192,33 @@ function exportImage() {
   return canvas.toDataURL('image/jpeg', .82);
 }
 function preview() {
-  error(''); if (!form.reportValidity()) return;
-  for (const id of ['sender','colleague','recognition']) {
-    if (!$(id).value.trim()) { error('请把姓名、团队和认可内容填写完整。'); $(id).focus(); return; }
+  error('');
+  const team = form.elements.namedItem('team').value;
+  const checks = [
+    [$('sender'), $('sender').value.trim(), '请输入你的名字。'],
+    [$('colleague'), $('colleague').value.trim(), '请输入对方的名字。'],
+    [form.querySelector('input[name="team"]'), team, '请选择对方所属的团队。'],
+    [$('recognition'), $('recognition').value.trim(), '请输入想对同事说的话。']
+  ];
+  const missing = checks.find(([, value]) => !value);
+  if (missing) {
+    const [field, , message] = missing;
+    error(message, field);
+    return;
   }
   if (state.photoLoading) { error('照片还在处理中，请稍等一下。'); return; }
-  if ($('photo-toggle').checked && !state.image) { error('请选择一张照片，或者关闭“添加照片”选项。'); $('upload-area').focus(); return; }
+  if ($('photo-toggle').checked && !state.image) { error('请选择一张照片，或者关闭“添加照片”选项。', $('upload-area')); return; }
   try {
-    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), team = form.elements.namedItem('team').value, recognition = $('recognition').value.trim();
+    const sender = $('sender').value.trim(), colleague = $('colleague').value.trim(), recognition = $('recognition').value.trim();
     const imageUrl = exportImage();
     const message = `✨ 拾光机 · 同事认可\n\n来自：${sender}\n送给：${colleague}\n团队：${team}\n\n${recognition}\n\n🌟 让每一份闪光被看见。`;
     state.imageUrl = imageUrl;
     state.payload = { schemaVersion: 1, source: 'shiguangji', submissionId: crypto.randomUUID(), createdAt: new Date().toISOString(), sender, colleague, team, recognition, message, hasImage: !!imageUrl, imageBase64: imageUrl ? imageUrl.split(',')[1] : '', imageMimeType: imageUrl ? 'image/jpeg' : '', imageFilename: imageUrl ? 'shiguangji-moment.jpg' : '' };
     $('preview-colleague').textContent = colleague; $('preview-team').textContent = team; $('preview-message').textContent = recognition; $('preview-sender').textContent = sender;
     $('preview-image').hidden = !imageUrl; if (imageUrl) $('preview-image').src = imageUrl; else $('preview-image').removeAttribute('src');
-    $('download-image').hidden = !imageUrl; $('handoff-status').hidden = true; $('handoff-fallback').hidden = true; $('manual-copy').hidden = true; $('handoff-button').textContent = '复制数据并打开快捷指令'; $('handoff-button').disabled = false;
+    $('download-image').hidden = !imageUrl; $('handoff-status').textContent = ''; $('handoff-fallback').hidden = true; $('manual-copy').hidden = true; $('handoff-button').textContent = '复制数据并打开快捷指令'; $('handoff-button').disabled = false;
     $('preview-dialog').showModal();
+    $('preview-title').focus();
   } catch { error('这次图片合成没有完成，请减少贴纸或更换照片再试。'); }
 }
 async function handoff() {
@@ -160,11 +227,11 @@ async function handoff() {
   try {
     if (!navigator.clipboard?.writeText) throw new Error('Clipboard not available');
     await navigator.clipboard.writeText(text);
-    $('handoff-status').textContent = '已复制，正在尝试打开快捷指令。请在“信息”App 中确认发送结果。'; $('handoff-status').hidden = false;
+    $('handoff-status').textContent = '已复制，正在尝试打开快捷指令。请在“信息”App 中确认发送结果。';
     $('handoff-fallback').hidden = false; $('manual-copy').hidden = true; $('handoff-button').textContent = '重新复制并打开（可能重复发送）';
     window.location.href = SHORTCUT_URL;
   } catch {
-    $('handoff-status').textContent = '浏览器未允许自动复制，请使用下方的手动复制方式。'; $('handoff-status').hidden = false;
+    $('handoff-status').textContent = '浏览器未允许自动复制，请使用下方的手动复制方式。';
     $('payload-text').value = text; $('manual-copy').hidden = false; $('payload-text').focus(); $('payload-text').select();
   } finally { $('handoff-button').disabled = false; }
 }

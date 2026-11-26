@@ -10,3 +10,14 @@
 .team-option span{display:flex;align-items:center;min-height:44px;padding:6px 12px;border:1px solid #464259;border-radius:10px;background:var(--field);color:var(--text);transition:border-color .2s,background-color .2s}
 .team-option input:checked + span{border-color:var(--lavender);background:#382e53;color:var(--text)}
 .team-option input:focus-visible + span{outline:2px solid var(--lavender);outline-offset:2px}
+
+.skip-link{position:fixed;z-index:30;top:10px;left:12px;padding:10px 14px;border-radius:8px;background:var(--lavender);color:var(--bg);transform:translateY(calc(-100% - 12px))}
+.skip-link:focus{transform:none}
+.team-field .team-option span{margin-left:0;color:var(--text)}
+#recognition-form :focus-visible,.guide-link:focus-visible,dialog :focus-visible{outline:2px solid var(--lavender);outline-offset:3px}
+.team-option:focus-within span{outline:2px solid var(--lavender);outline-offset:2px}
+#form-error:empty,#handoff-status:empty{position:absolute;width:1px;height:1px;overflow:hidden;margin:0;padding:0;border:0}
+button.upload-area{width:100%;color:var(--text)}
+.sticker-controls{flex-wrap:wrap}
+.sticker-move{display:flex;flex-wrap:wrap;gap:6px}
+.sticker-controls button,.sticker-move button,.dialog-tools button{min-height:44px}
