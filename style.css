@@ -235,7 +235,7 @@ button.upload-area{width:100%;color:var(--text)}
 }
 
 /* Limited mode uses a cool-to-warm edge with fixed, legible content surfaces. */
-.mode-tools { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px 14px; }
+.recognition-page .form-topline { min-height: 44px; gap: 12px; }
 .glow-toggle {
   min-height: 44px;
   padding: 6px 9px;
@@ -368,12 +368,6 @@ button.upload-area{width:100%;color:var(--text)}
 .recognition-page[data-mode="regular"] .limited-glow-edge::before { animation-play-state: paused; }
 @keyframes limited-glow-flow {
   to { transform: translate(-50%, -50%) rotate(1turn); }
-}
-@media (max-width: 760px) {
-  .mode-tools { margin-inline-start: auto; }
-}
-@media (max-width: 500px) {
-  .recognition-page[data-mode="limited"] .mode-picker { flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .recognition-page[data-mode="regular"].glow-blooming .limited-glow { display: none; }

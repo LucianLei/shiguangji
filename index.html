@@ -7,7 +7,7 @@
 <meta name="description" content="拾起同事的闪光时刻。写下认可，为照片贴上可爱的表情，把心意送到。">
 <title>拾光机 · 让每一份闪光被看见</title>
 <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
-<link rel="stylesheet" href="style.css?v=side-bloom-soft">
+<link rel="stylesheet" href="style.css?v=stable-mode-bar">
 <script src="app.js?v=side-bloom" defer></script>
 </head>
 <body class="recognition-page" data-mode="regular">
@@ -35,16 +35,13 @@
       <span class="choice-face">限定模式 <small><span lang="en">Apple</span> 智能认可</small></span>
     </label>
   </fieldset>
-  <div class="mode-tools">
-    <button type="button" id="limited-glow-toggle" class="glow-toggle" data-visible-mode="limited" hidden>暂停光效</button>
-    <div class="appearance-control">
-      <label for="appearance">外观</label>
-      <select id="appearance">
-        <option value="auto">自动</option>
-        <option value="light">浅色</option>
-        <option value="dark">深色</option>
-      </select>
-    </div>
+  <div class="appearance-control">
+    <label for="appearance">外观</label>
+    <select id="appearance">
+      <option value="auto">自动</option>
+      <option value="light">浅色</option>
+      <option value="dark">深色</option>
+    </select>
   </div>
 </div>
 <main id="recognition-page" class="wrap main-layout">
@@ -61,7 +58,12 @@
     <div class="intro-foot"><span aria-hidden="true">✧</span><p>一句认可，也能点亮一个人的一天。</p></div>
   </section>
   <section class="workspace" aria-labelledby="form-title">
-    <div class="form-topline"><span class="caps" data-visible-mode="regular" lang="en">A LITTLE APPRECIATION</span><span class="caps" data-visible-mode="limited" hidden><span lang="en">Apple</span> 智能认可</span><span class="form-mark" aria-hidden="true">✦</span></div>
+    <div class="form-topline">
+      <span class="caps" data-visible-mode="regular" lang="en">A LITTLE APPRECIATION</span>
+      <span class="caps" data-visible-mode="limited" hidden><span lang="en">Apple</span> 智能认可</span>
+      <span class="form-mark" data-visible-mode="regular" aria-hidden="true">✦</span>
+      <button type="button" id="limited-glow-toggle" class="glow-toggle" data-visible-mode="limited" hidden>暂停光效</button>
+    </div>
     <h2 id="form-title" tabindex="-1">
       <span data-visible-mode="regular">今天，想为谁点亮一颗星？</span>
       <span data-visible-mode="limited" hidden>今天，你想认可谁对 <span lang="en">Apple Intelligence</span> 的贡献？</span>
