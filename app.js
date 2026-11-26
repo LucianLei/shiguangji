@@ -100,10 +100,28 @@ if (form) {
   const modePicker = document.querySelector('.mode-picker');
   const modeContent = document.querySelectorAll('[data-visible-mode]');
   const glowToggle = $('limited-glow-toggle');
+  const glow = $('recognition-glow');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const body = document.body;
+  let bloomTimer;
+
+  function stopBloom() {
+    clearTimeout(bloomTimer);
+    body.classList.remove('glow-blooming');
+  }
+
+  function playBloom() {
+    stopBloom();
+    if (reducedMotion.matches || body.classList.contains('glow-paused')) return;
+    // Commit the reset so switching modes during the opening bloom can restart it.
+    void glow.offsetWidth;
+    body.classList.add('glow-blooming');
+    bloomTimer = setTimeout(stopBloom, 1460);
+  }
 
   function applyMode() {
     const mode = modePicker.querySelector('input:checked').value;
-    document.body.dataset.mode = mode;
+    body.dataset.mode = mode;
     modeContent.forEach(element => {
       element.hidden = element.dataset.visibleMode !== mode;
     });
@@ -112,12 +130,21 @@ if (form) {
       : '哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。';
   }
   glowToggle.addEventListener('click', () => {
-    const paused = document.body.classList.toggle('glow-paused');
+    const paused = body.classList.toggle('glow-paused');
+    if (paused) stopBloom();
     glowToggle.textContent = paused ? '播放光效' : '暂停光效';
   });
-  modePicker.addEventListener('change', applyMode);
+  modePicker.addEventListener('change', () => {
+    applyMode();
+    if (body.dataset.mode === 'limited') playBloom();
+    else stopBloom();
+  });
+  reducedMotion.addEventListener('change', event => {
+    if (event.matches) stopBloom();
+  });
   window.addEventListener('pageshow', applyMode);
   applyMode();
+  playBloom();
 
   refreshWeather();
   setInterval(refreshWeather, 60 * 1000);

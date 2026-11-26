@@ -7,13 +7,15 @@
 <meta name="description" content="拾起同事的闪光时刻。写下认可，为照片贴上可爱的表情，把心意送到。">
 <title>拾光机 · 让每一份闪光被看见</title>
 <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
-<link rel="stylesheet" href="style.css?v=limited-glow">
-<script src="app.js?v=limited-glow" defer></script>
+<link rel="stylesheet" href="style.css?v=side-bloom">
+<script src="app.js?v=side-bloom" defer></script>
 </head>
 <body class="recognition-page" data-mode="regular">
-<div class="limited-glow" aria-hidden="true">
-  <div class="limited-glow-halo"><div class="limited-glow-edge"></div></div>
-  <div class="limited-glow-edge"></div>
+<div id="recognition-glow" class="limited-glow" aria-hidden="true">
+  <div class="limited-glow-frame">
+    <div class="limited-glow-halo"><div class="limited-glow-edge"></div></div>
+    <div class="limited-glow-edge"></div>
+  </div>
 </div>
 <a href="#form-title" class="skip-link">跳到认可表单</a>
 <div id="spoken-status" class="visually-hidden" role="status" aria-atomic="true"></div>

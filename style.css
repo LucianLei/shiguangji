@@ -251,10 +251,6 @@ button.upload-area{width:100%;color:var(--text)}
   color: inherit;
 }
 .recognition-page[data-mode="limited"] {
-  --limited-spectrum: conic-gradient(
-    from 225deg, #ff994a, #ff625e, #ff799a, #e96ef5,
-    #a876ff, #609bf9, #52d1fe, #a589ff, #ff7c9c, #ff994a
-  );
   --limited-accent: linear-gradient(112deg, #ffc8a6 0%, #ffd0ed 39%, #d9ceff 69%, #bceaff 100%);
   --limited-trim: linear-gradient(128deg, #f19c6a, #d784c4 36%, #9674df 69%, #76b8e0);
   --action-text: #291b3b;
@@ -292,8 +288,53 @@ button.upload-area{width:100%;color:var(--text)}
   border-radius: 20px;
   overflow: hidden;
   --glow-width: clamp(3px, .55vw, 6px);
+  --glow-origin: 34%;
+  --glow-spectrum: conic-gradient(
+    from 78deg, #ffd080, #ff9b57, #ff6d7c, #ef8fe7,
+    #9a81ff, #6f9cf9, #72d2fb, #ac98ff, #f1a7bf, #ffd080
+  );
 }
-.recognition-page[data-mode="limited"] .limited-glow { display: block; }
+.recognition-page[data-mode="limited"] .limited-glow,
+.recognition-page.glow-blooming .limited-glow { display: block; }
+.recognition-page[data-mode="regular"].glow-blooming .limited-glow {
+  animation: opening-glow-fade 1.45s ease-out both;
+}
+.limited-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 101% var(--glow-origin), #ffe18a91 0%, #ffc47445 13%, #f6a5cc2b 29%, transparent 57%),
+    radial-gradient(ellipse at 95% 48%, #a8b7fb3b, transparent 68%);
+  transform-origin: right var(--glow-origin);
+}
+.limited-glow-frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.glow-blooming .limited-glow::before {
+  animation: side-glow-wash 1.1s cubic-bezier(.18, .68, .28, 1) both;
+}
+.glow-blooming .limited-glow-frame {
+  animation: side-glow-spread .72s cubic-bezier(.22, .6, .3, 1) both;
+}
+@keyframes side-glow-wash {
+  0% { opacity: 0; transform: scale(.07, .08); }
+  21% { opacity: .94; transform: scale(.38, .66); }
+  49% { opacity: .68; transform: scale(1.15, 1.18); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+@keyframes side-glow-spread {
+  0% { clip-path: circle(0 at 100% var(--glow-origin)); opacity: 0; }
+  20% { clip-path: circle(20vmax at 100% var(--glow-origin)); opacity: .78; }
+  100% { clip-path: circle(145vmax at 100% var(--glow-origin)); opacity: 1; }
+}
+@keyframes opening-glow-fade {
+  0%, 51% { opacity: 1; }
+  100% { opacity: 0; }
+}
 .limited-glow-halo {
   position: absolute;
   inset: 0;
@@ -319,11 +360,12 @@ button.upload-area{width:100%;color:var(--text)}
   left: 50%;
   width: 145vmax;
   height: 145vmax;
-  background: var(--limited-spectrum);
+  background: var(--glow-spectrum);
   transform: translate(-50%, -50%) rotate(0turn);
   animation: limited-glow-flow 11s linear infinite;
 }
-.glow-paused .limited-glow-edge::before { animation-play-state: paused; }
+.glow-paused .limited-glow-edge::before,
+.recognition-page[data-mode="regular"] .limited-glow-edge::before { animation-play-state: paused; }
 @keyframes limited-glow-flow {
   to { transform: translate(-50%, -50%) rotate(1turn); }
 }
@@ -334,6 +376,7 @@ button.upload-area{width:100%;color:var(--text)}
   .recognition-page[data-mode="limited"] .mode-picker { flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .recognition-page[data-mode="regular"].glow-blooming .limited-glow { display: none; }
   .limited-glow-edge::before { animation: none; }
   .glow-toggle { display: none; }
 }
