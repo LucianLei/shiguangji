@@ -3,25 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101225">
+<meta name="theme-color" content="#ffffff">
 <meta name="description" content="拾起同事的闪光时刻。写下认可，为照片贴上可爱的表情，把心意送到。">
 <title>拾光机 · 让每一份闪光被看见</title>
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=accessibility">
-<script src="app.js?v=accessibility" defer></script>
+<link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
+<link rel="stylesheet" href="style.css?v=modes-weather">
+<script src="app.js?v=modes-weather" defer></script>
 </head>
-<body>
+<body class="recognition-page">
 <a href="#form-title" class="skip-link">跳到认可表单</a>
 <div id="spoken-status" class="visually-hidden" role="status" aria-atomic="true"></div>
-<div id="starfield" aria-hidden="true"></div>
-<div class="nebula nebula-one" aria-hidden="true"></div><div class="nebula nebula-two" aria-hidden="true"></div>
 <header class="site-header wrap">
-  <a href="./" class="brand" aria-label="拾光机首页"><span class="brand-icon" aria-hidden="true">✦</span><span>拾光机<small>COLLECT THE GOOD</small></span></a>
-  <nav aria-label="页面工具"><button type="button" id="motion-toggle" class="quiet-button" aria-pressed="true" aria-label="关闭星光动画">✧ <span>星光已开启</span></button><a href="guide.html" class="guide-link">快捷指令设置 <span aria-hidden="true">↗</span></a></nav>
+  <a href="./" class="brand" aria-label="拾光机首页"><img class="brand-logo logo-light" src="logo-light.webp" alt="" width="56" height="45"><img class="brand-logo logo-dark" src="logo-dark.webp" alt="" width="56" height="45"><span>拾光机<small>COLLECT THE GOOD</small></span></a>
+  <nav aria-label="页面工具"><a href="guide.html" class="guide-link">快捷指令设置 <span aria-hidden="true">↗</span></a></nav>
 </header>
-<main class="wrap main-layout">
+<div class="wrap mode-bar">
+  <fieldset class="mode-picker">
+    <legend class="visually-hidden">认可模式</legend>
+    <label class="choice mode-choice">
+      <input type="radio" name="mode" value="regular" checked>
+      <span class="choice-face">常规模式</span>
+    </label>
+    <label class="choice mode-choice">
+      <input type="radio" name="mode" value="limited">
+      <span class="choice-face">限定模式 <small><span lang="en">Apple</span> 智能认可</small></span>
+    </label>
+  </fieldset>
+  <div class="appearance-control">
+    <label for="appearance">外观</label>
+    <select id="appearance">
+      <option value="auto">自动</option>
+      <option value="light">浅色</option>
+      <option value="dark">深色</option>
+    </select>
+  </div>
+</div>
+<main id="recognition-page" class="wrap main-layout" data-mode="regular">
   <section class="intro" aria-labelledby="hero-title">
-    <div class="eyebrow"><span class="little-star">✦</span> 每一份好，都值得被看见</div>
+    <div class="eyebrow"><span class="little-star" aria-hidden="true">✦</span> 每一份好，都值得被看见</div>
     <h1 id="hero-title">拾起身边的<br><span>闪光时刻。</span></h1>
     <p class="intro-copy">有些温暖，来自一次及时的援手。<br>有些光芒，藏在每一天的认真里。<br>把你看见的美好，告诉 TA。</p>
     <div class="orbit-art" aria-hidden="true">
@@ -30,10 +49,10 @@
       <div class="floating-note"><span class="note-label">一份来自同事的认可</span><span class="note-star">🌟</span><strong>你的认真，<br>我都有看见。</strong><span class="note-bottom">THANK YOU FOR SHINING <span>✦</span></span></div>
       <span class="art-emoji emoji-heart">💛</span><span class="art-emoji emoji-hands">🙌</span>
     </div>
-    <div class="intro-foot"><span>✧</span><p>一句认可，也能点亮一个人的一天。</p></div>
+    <div class="intro-foot"><span aria-hidden="true">✧</span><p>一句认可，也能点亮一个人的一天。</p></div>
   </section>
   <section class="workspace" aria-labelledby="form-title">
-    <div class="form-topline"><span class="caps">A LITTLE APPRECIATION</span><span class="form-mark" aria-hidden="true">✦</span></div>
+    <div class="form-topline"><span class="caps" id="regular-form-label" lang="en">A LITTLE APPRECIATION</span><span class="caps" id="limited-form-label" hidden><span lang="en">Apple</span> 智能认可</span><span class="form-mark" aria-hidden="true">✦</span></div>
     <h2 id="form-title" tabindex="-1">今天，想为谁点亮一颗星？</h2>
     <p class="form-subtitle">花一点时间，留住一个值得感谢的瞬间。</p>
     <form id="recognition-form" aria-labelledby="form-title" novalidate>
@@ -45,18 +64,18 @@
         <legend>TA 所属的团队 <span aria-hidden="true">*</span></legend>
         <p id="team-hint" class="visually-hidden">必选，七个团队中选择一个。</p>
         <div class="team-options">
-          <label class="team-option"><input type="radio" name="team" value="PZ" required><span lang="en">PZ</span></label>
-          <label class="team-option"><input type="radio" name="team" value="GB"><span lang="en">GB</span></label>
-          <label class="team-option"><input type="radio" name="team" value="OPS"><span lang="en">OPS</span></label>
-          <label class="team-option"><input type="radio" name="team" value="TAA"><span lang="en">TAA</span></label>
-          <label class="team-option"><input type="radio" name="team" value="BIZ"><span lang="en">BIZ</span></label>
-          <label class="team-option"><input type="radio" name="team" value="People"><span lang="en">People</span></label>
-          <label class="team-option"><input type="radio" name="team" value="Leadership"><span lang="en">Leadership</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="PZ" required><span class="choice-face" lang="en">PZ</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="GB"><span class="choice-face" lang="en">GB</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="OPS"><span class="choice-face" lang="en">OPS</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="TAA"><span class="choice-face" lang="en">TAA</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="BIZ"><span class="choice-face" lang="en">BIZ</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="People"><span class="choice-face" lang="en">People</span></label>
+          <label class="choice team-option"><input type="radio" name="team" value="Leadership"><span class="choice-face" lang="en">Leadership</span></label>
         </div>
       </fieldset>
       <div class="field recognition-field"><label for="recognition">我想对 TA 说 <span aria-hidden="true">*</span></label><textarea id="recognition" name="recognition" rows="4" placeholder="哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。" minlength="1" maxlength="1200" required aria-describedby="recognition-hint"></textarea><span id="recognition-hint" class="visually-hidden">必填，最多 1200 字。可以用 iPhone 键盘输入或听写。</span><span id="word-count" class="word-count" aria-hidden="true">0 / 1200</span></div>
       <div class="inspiration" role="group" aria-label="写作灵感"><span>找点灵感</span><button type="button" data-prompt="谢谢你在我需要帮助的时候主动伸出援手，"><span aria-hidden="true">🤝</span> 及时的帮助</button><button type="button" data-prompt="你对每一个细节的认真，让我印象很深，"><span aria-hidden="true">✨</span> 认真与专业</button><button type="button" data-prompt="和你一起合作，总能感受到满满的能量，"><span aria-hidden="true">🌈</span> 温暖的协作</button></div>
-      <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p>加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片" aria-controls="photo-section"><span></span></label></div>
+      <div class="photo-heading"><div><h3>让这一刻，有画面 <span>可选</span></h3><p id="photo-hint">加一张照片，再贴上一点小小的可爱。</p></div><label class="switch"><input id="photo-toggle" type="checkbox" aria-label="添加照片" aria-describedby="photo-hint" aria-controls="photo-section"><span aria-hidden="true"></span></label></div>
       <section id="photo-section" hidden aria-label="照片和贴纸编辑器">
         <button type="button" class="upload-area" id="upload-area" aria-labelledby="upload-label" aria-describedby="upload-hint"><span class="upload-icon" aria-hidden="true">＋</span><strong id="upload-label">从手机相册选择照片</strong><span id="upload-hint">照片只在本机处理，不上传服务器</span></button>
         <input type="file" id="photo-input" accept="image/*" hidden>
@@ -84,7 +103,7 @@
     </form>
   </section>
 </main>
-<footer class="site-footer wrap"><span>拾光机 <span class="footer-spark">✦</span> 记录美好，传递认可</span><span>每一个闪光的你，都值得被记住。</span></footer>
+<footer class="site-footer wrap"><span>拾光机 <span class="footer-spark" aria-hidden="true">✦</span> 记录美好，传递认可</span><a class="weather-credit" href="https://open-meteo.com/">天气数据来自 <span lang="en">Open-Meteo</span></a></footer>
 <dialog id="preview-dialog" aria-labelledby="preview-title">
   <div class="dialog-heading"><div><span class="caps">READY TO SHINE</span><h2 id="preview-title" tabindex="-1" autofocus>一份心意，准备就绪。</h2></div><button class="close-button" id="close-preview" type="button" aria-label="关闭预览">×</button></div>
   <article class="recognition-card"><div class="card-top"><span>拾光机 · 同事认可</span><span aria-hidden="true">✦</span></div><p class="card-to">送给 <strong id="preview-colleague"></strong></p><p id="preview-team" class="card-team"></p><p id="preview-message" class="card-message"></p><img id="preview-image" alt="已合成表情贴纸的照片" hidden><p class="card-from">来自 <strong id="preview-sender"></strong> 的一颗星 <span aria-hidden="true">✧</span></p></article>

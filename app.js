@@ -19,40 +19,116 @@ function error(text, field) {
   const message = $('form-error');
   form.querySelectorAll('[aria-invalid]').forEach(input => {
     input.removeAttribute('aria-invalid');
-    input.removeAttribute('aria-errormessage');
+    const descriptions = (input.getAttribute('aria-describedby') || '').split(' ')
+      .filter(id => id && id !== message.id);
+    if (descriptions.length) input.setAttribute('aria-describedby', descriptions.join(' '));
+    else input.removeAttribute('aria-describedby');
   });
   message.textContent = text;
   if (field) {
     field.setAttribute('aria-invalid', 'true');
-    field.setAttribute('aria-errormessage', message.id);
+    const descriptions = [field.getAttribute('aria-describedby'), message.id].filter(Boolean);
+    field.setAttribute('aria-describedby', descriptions.join(' '));
     field.focus();
   }
 }
-function createStars() {
-  const field = $('starfield'); if (!field) return;
-  // Deterministic positions keep every render calm and avoid clustering.
-  let seed = 17; const rand = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-  for (let i = 0; i < 92; i++) {
-    const star = document.createElement('span'); star.className = 'star' + (i % 19 === 0 ? ' cross' : '');
-    if (i % 19 === 0) star.textContent = '✧';
-    const size = 1 + rand() * 1.8;
-    star.style.cssText = `left:${rand()*100}%;top:${rand()*100}%;width:${size}px;height:${size}px;--duration:${4+rand()*5}s;--delay:-${rand()*9}s`;
-    field.append(star);
-  }
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)'); let motion = !reduced.matches;
-  function applyMotion() { document.body.classList.toggle('still', !motion); const button = $('motion-toggle'); if(button) { button.setAttribute('aria-pressed', String(motion)); button.setAttribute('aria-label', motion ? '关闭星光动画' : '开启星光动画'); button.querySelector('span').textContent = motion ? '星光已开启' : '星光已暂停'; } }
-  $('motion-toggle')?.addEventListener('click', () => { if (reduced.matches) { motion = false; toast('已遵循设备的“减少动态效果”设置'); } else motion = !motion; applyMotion(); });
-  reduced.addEventListener('change', () => { motion = !reduced.matches; applyMotion(); }); applyMotion();
+const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=31.16&longitude=121.35&current=weather_code,is_day';
+const WEATHER_REFRESH = 30 * 60 * 1000;
+const SHANGHAI_HOUR = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Shanghai', hour: '2-digit', hourCycle: 'h23'
+});
+const APPEARANCE_KEY = 'shiguangji-appearance';
+const appearance = $('appearance');
+let weather = null;
+let nextWeatherRequest = 0;
+
+function weatherTone(code) {
+  if ([0, 1].includes(code)) return 'clear';
+  if ([2, 3, 45, 48].includes(code)) return 'cloud';
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snow';
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) return 'rain';
+  return '';
 }
-createStars();
+
+function applyAppearance() {
+  const hour = Number(SHANGHAI_HOUR.format(new Date()));
+  const isDay = appearance.value === 'auto'
+    ? (weather?.isDay ?? (hour >= 6 && hour < 18))
+    : appearance.value === 'light';
+  document.body.dataset.theme = isDay ? 'day' : 'night';
+  document.body.dataset.weather = weather?.tone ?? '';
+  document.querySelector('meta[name="theme-color"]').content = isDay ? '#ffffff' : '#101225';
+}
+
+async function refreshWeather() {
+  if (weather && Date.now() >= weather.expiresAt) weather = null;
+  applyAppearance();
+  if (Date.now() < nextWeatherRequest) return;
+  nextWeatherRequest = Date.now() + 5 * 60 * 1000;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4500);
+  try {
+    const response = await fetch(WEATHER_URL, { signal: controller.signal });
+    if (!response.ok) return;
+    const { current } = await response.json();
+    if (current?.is_day !== 0 && current?.is_day !== 1) return;
+    weather = {
+      isDay: current.is_day === 1,
+      tone: weatherTone(current.weather_code),
+      expiresAt: Date.now() + WEATHER_REFRESH
+    };
+    nextWeatherRequest = weather.expiresAt;
+    applyAppearance();
+  } catch {
+    // The time-based theme remains usable without a weather response.
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 if (form) {
+  try {
+    const saved = localStorage.getItem(APPEARANCE_KEY);
+    if (saved === 'light' || saved === 'dark') appearance.value = saved;
+  } catch {
+    // Appearance can still be changed for this visit.
+  }
+  appearance.addEventListener('change', () => {
+    applyAppearance();
+    try { localStorage.setItem(APPEARANCE_KEY, appearance.value); } catch {}
+  });
+  const modePicker = document.querySelector('.mode-picker');
+  function applyMode() {
+    const mode = modePicker.querySelector('input:checked').value;
+    $('recognition-page').dataset.mode = mode;
+    $('regular-form-label').hidden = mode === 'limited';
+    $('limited-form-label').hidden = mode !== 'limited';
+  }
+  modePicker.addEventListener('change', applyMode);
+  window.addEventListener('pageshow', applyMode);
+  applyMode();
+
+  refreshWeather();
+  setInterval(refreshWeather, 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshWeather();
+  });
   $('recognition').placeholder = '哪一个瞬间，让你觉得 TA 真棒？\n写下具体的小事，让这份认可更有温度。';
   $('recognition').addEventListener('input', () => $('word-count').textContent = `${$('recognition').value.length} / 1200`);
   document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
     const field = $('recognition'); if (field.value.trim()) { toast('保留你写下的心意，继续写就好'); field.focus(); return; }
-    field.value = button.dataset.prompt; field.dispatchEvent(new Event('input')); field.focus(); field.setSelectionRange(field.value.length, field.value.length);
+    field.value = button.dataset.prompt;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.focus();
+    field.setSelectionRange(field.value.length, field.value.length);
+    announce('已插入开头，可以继续填写。');
   }));
-  $('photo-toggle').addEventListener('change', () => { $('photo-section').hidden = !$('photo-toggle').checked; error(''); });
+  function syncPhotoToggle() {
+    $('photo-section').hidden = !$('photo-toggle').checked;
+  }
+  $('photo-toggle').addEventListener('change', () => { syncPhotoToggle(); error(''); });
+  window.addEventListener('pageshow', syncPhotoToggle);
+  syncPhotoToggle();
   $('upload-area').addEventListener('click', () => $('photo-input').click());
   form.addEventListener('input', () => { if (form.querySelector('[aria-invalid]')) error(''); });
   form.addEventListener('reset', () => error(''));
@@ -100,7 +176,10 @@ if (form) {
   form.addEventListener('submit', event => { event.preventDefault(); preview(); });
   $('close-preview').addEventListener('click', () => $('preview-dialog').close());
   $('edit-recognition').addEventListener('click', () => $('preview-dialog').close());
-  $('preview-dialog').addEventListener('close', () => $('preview-button').focus());
+  $('preview-dialog').addEventListener('close', () => {
+    const target = $('preview-button').disabled ? $('photo-toggle') : $('preview-button');
+    target.focus();
+  });
   $('handoff-button').addEventListener('click', handoff);
   $('download-json').addEventListener('click', () => { if (state.payload) download(new Blob([JSON.stringify(state.payload)], { type: 'application/json' }), 'shiguangji-recognition.json'); });
   $('download-image').addEventListener('click', () => { if (state.imageUrl) { const a = document.createElement('a'); a.href = state.imageUrl; a.download = 'shiguangji-moment.jpg'; a.click(); } });
@@ -153,9 +232,9 @@ function deleteSelected() {
 }
 function renderStickers() {
   $('sticker-layer').replaceChildren();
-  state.stickers.forEach(s => {
+  state.stickers.forEach((s, index) => {
     const button = document.createElement('button'); button.id = 'sticker-' + s.id; button.className = 'photo-sticker'; button.type = 'button'; button.textContent = s.emoji;
-    button.setAttribute('aria-label', s.label + '贴纸');
+    button.setAttribute('aria-label', s.label + '贴纸，第 ' + (index + 1) + ' 个');
     let drag = null;
     button.addEventListener('pointerdown', event => {
       if (event.button !== 0) return; event.preventDefault(); state.selected = s.id; syncSelection(); button.focus({preventScroll:true});
